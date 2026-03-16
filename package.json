@@ -1,0 +1,43 @@
+{
+  "name": "polkapay",
+  "version": "1.0.0",
+  "description": "Decentralized subscription payments on PVM",
+  "homepage": "https://github.com/ervcdev/PolkaPay#readme",
+  "bugs": {
+    "url": "https://github.com/ervcdev/PolkaPay/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ervcdev/PolkaPay.git"
+  },
+  "license": "ISC",
+  "author": "Ervin Castro Perez",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "npx hardhat test",
+    "compile": "npx hardhat compile",
+    "deploy": "npx hardhat run scripts/deploy.js --network westendRevive",
+    "deploy:westend": "npx hardhat run scripts/deploy-westend.js --network westendRevive",
+    "deploy:local": "npx hardhat run scripts/deploy-local.js --network localPVM",
+    "start:local-pvm": "./scripts/start-local-pvm.sh",
+    "start:local-hardhat": "./scripts/start-local-hardhat.sh",
+    "dev": "cd frontend && npm run dev",
+    "setup": "npm install && cd frontend && npm install",
+    "clean": "hardhat clean",
+    "verify": "hardhat verify",
+    "gas-report": "REPORT_GAS=true hardhat test"
+
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "hardhat": "^2.19.0"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.9.3",
+    "@polkadot/extension-dapp": "^0.62.6",
+    "@polkadot/util-crypto": "^14.0.1",
+    "dotenv": "^16.3.1",
+    "ethers": "^6.13.0"
+  }
+}
