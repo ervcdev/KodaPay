@@ -1,5 +1,5 @@
 {
-  "name": "polkapay",
+  "name": "subscript",
   "version": "1.0.0",
   "description": "Decentralized subscription payments on PVM",
   "homepage": "https://github.com/ervcdev/PolkaPay#readme",
@@ -22,12 +22,14 @@
     "deploy:local": "npx hardhat run scripts/deploy-local.js --network localPVM",
     "start:local-pvm": "./scripts/start-local-pvm.sh",
     "start:local-hardhat": "./scripts/start-local-hardhat.sh",
-    "dev": "cd frontend && npm run dev",
+    "dev": "npm run dev --prefix frontend",
+    "build": "npm run build --prefix frontend",
+    "start": "npm run start --prefix frontend",
     "setup": "npm install && cd frontend && npm install",
     "clean": "hardhat clean",
     "verify": "hardhat verify",
-    "gas-report": "REPORT_GAS=true hardhat test"
-
+    "gas-report": "REPORT_GAS=true hardhat test",
+    "postinstall": "cd frontend && npm install"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
@@ -38,6 +40,10 @@
     "@polkadot/extension-dapp": "^0.62.6",
     "@polkadot/util-crypto": "^14.0.1",
     "dotenv": "^16.3.1",
-    "ethers": "^6.13.0"
+    "ethers": "^6.13.0",
+    "lucide-react": "^0.577.0",
+    "next": "13.5.6",
+    "react": "^18",
+    "react-dom": "^18"
   }
 }
