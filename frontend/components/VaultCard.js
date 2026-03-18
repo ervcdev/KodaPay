@@ -5,6 +5,154 @@
 
 import { Wallet, ArrowDownToLine, ArrowUpFromLine, Loader2, Droplets } from 'lucide-react'
 
+const styles = {
+  card: {
+    backgroundColor: 'var(--bg-card)',
+    border: '1px solid var(--border)',
+    borderRadius: '12px',
+    padding: '24px',
+  },
+  header: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    marginBottom: '24px',
+  },
+  iconBox: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '8px',
+    backgroundColor: 'var(--primary-light)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'var(--primary)',
+  },
+  title: {
+    fontSize: '18px',
+    fontWeight: 600,
+    color: 'var(--text-primary)',
+  },
+  subtitle: {
+    fontSize: '13px',
+    color: 'var(--text-muted)',
+    marginTop: '2px',
+  },
+  balanceBox: {
+    backgroundColor: 'var(--bg-input)',
+    borderRadius: '12px',
+    padding: '24px',
+    marginBottom: '24px',
+    textAlign: 'center',
+  },
+  balanceLabel: {
+    fontSize: '13px',
+    color: 'var(--text-secondary)',
+    marginBottom: '8px',
+  },
+  balanceAmount: {
+    fontSize: '48px',
+    fontWeight: 700,
+    color: 'var(--text-primary)',
+  },
+  balanceUnit: {
+    fontSize: '18px',
+    color: 'var(--text-secondary)',
+    marginLeft: '8px',
+  },
+  walletInfo: {
+    display: 'flex',
+    justifyContent: 'center',
+    gap: '24px',
+    marginTop: '16px',
+    fontSize: '13px',
+  },
+  walletLabel: {
+    color: 'var(--text-muted)',
+  },
+  walletValue: {
+    color: 'var(--text-secondary)',
+    fontFamily: 'monospace',
+  },
+  actionsGrid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '16px',
+  },
+  actionGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  },
+  label: {
+    fontSize: '13px',
+    fontWeight: 500,
+    color: 'var(--text-secondary)',
+  },
+  inputRow: {
+    display: 'flex',
+    gap: '8px',
+  },
+  input: {
+    flex: 1,
+    padding: '12px 16px',
+    backgroundColor: 'var(--bg-input)',
+    border: '1px solid var(--border)',
+    borderRadius: '8px',
+    fontSize: '14px',
+    color: 'var(--text-primary)',
+    outline: 'none',
+  },
+  btnPrimary: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '12px 16px',
+    borderRadius: '8px',
+    backgroundColor: 'var(--primary)',
+    color: 'white',
+    fontWeight: 500,
+    fontSize: '14px',
+    border: 'none',
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+  },
+  btnSecondary: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '12px 16px',
+    borderRadius: '8px',
+    backgroundColor: 'var(--bg-input)',
+    color: 'var(--text-primary)',
+    fontWeight: 500,
+    fontSize: '14px',
+    border: '1px solid var(--border)',
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+  },
+  faucetSection: {
+    marginTop: '24px',
+    paddingTop: '24px',
+    borderTop: '1px solid var(--border)',
+  },
+  faucetBtn: {
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+    padding: '12px 16px',
+    borderRadius: '8px',
+    backgroundColor: 'var(--bg-input)',
+    color: 'var(--text-primary)',
+    fontWeight: 500,
+    fontSize: '14px',
+    border: '1px solid var(--border)',
+    cursor: 'pointer',
+  },
+}
+
 export default function VaultCard({
   vaultBalance,
   usdtBalance,
@@ -20,110 +168,90 @@ export default function VaultCard({
   faucetAmount
 }) {
   return (
-    <div className="card card-glow">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Wallet className="w-5 h-5 text-primary" />
+    <div style={styles.card}>
+      <div style={styles.header}>
+        <div style={styles.iconBox}>
+          <Wallet size={20} />
+        </div>
+        <div>
+          <h2 style={styles.title}>My Vault</h2>
+          <p style={styles.subtitle}>Manage your subscription funds</p>
+        </div>
+      </div>
+
+      <div style={styles.balanceBox}>
+        <p style={styles.balanceLabel}>Vault Balance</p>
+        <div>
+          <span style={styles.balanceAmount}>{parseFloat(vaultBalance).toFixed(2)}</span>
+          <span style={styles.balanceUnit}>ppUSD</span>
+        </div>
+        <div style={styles.walletInfo}>
+          <div>
+            <span style={styles.walletLabel}>Wallet: </span>
+            <span style={styles.walletValue}>{parseFloat(usdtBalance).toFixed(2)} mUSDT</span>
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-white">My Vault</h2>
-            <p className="text-sm text-text-muted">Manage your subscription funds</p>
+            <span style={styles.walletLabel}>Native: </span>
+            <span style={styles.walletValue}>{parseFloat(walletBalance).toFixed(4)} ETH</span>
           </div>
         </div>
       </div>
 
-      {/* Balance Display */}
-      <div className="bg-background-elevated rounded-xl p-6 mb-6">
-        <p className="text-sm text-text-secondary mb-1">Vault Balance</p>
-        <div className="flex items-baseline gap-2">
-          <span className="text-4xl font-bold text-white">{parseFloat(vaultBalance).toFixed(2)}</span>
-          <span className="text-lg text-text-secondary">ppUSD</span>
-        </div>
-        <div className="flex gap-4 mt-4 text-sm">
-          <div>
-            <span className="text-text-muted">Wallet: </span>
-            <span className="text-text-secondary font-mono">{parseFloat(usdtBalance).toFixed(2)} mUSDT</span>
-          </div>
-          <div>
-            <span className="text-text-muted">Native: </span>
-            <span className="text-text-secondary font-mono">{parseFloat(walletBalance).toFixed(4)} ETH</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Deposit */}
-        <div className="space-y-3">
-          <label className="label">Deposit to Vault</label>
-          <div className="flex gap-2">
+      <div style={styles.actionsGrid}>
+        <div style={styles.actionGroup}>
+          <label style={styles.label}>Deposit to Vault</label>
+          <div style={styles.inputRow}>
             <input
               type="number"
               placeholder="Amount"
               value={depositAmount}
               onChange={(e) => setDepositAmount(e.target.value)}
-              className="input flex-1"
+              style={styles.input}
               min="0"
               step="0.01"
             />
             <button
               onClick={onDeposit}
               disabled={loading || !depositAmount}
-              className="btn-primary flex items-center gap-2 whitespace-nowrap"
+              style={{...styles.btnPrimary, opacity: (loading || !depositAmount) ? 0.5 : 1}}
             >
-              {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <ArrowDownToLine className="w-4 h-4" />
-              )}
+              {loading ? <Loader2 size={16} style={{animation: 'spin 1s linear infinite'}} /> : <ArrowDownToLine size={16} />}
               Deposit
             </button>
           </div>
         </div>
 
-        {/* Withdraw */}
-        <div className="space-y-3">
-          <label className="label">Withdraw from Vault</label>
-          <div className="flex gap-2">
+        <div style={styles.actionGroup}>
+          <label style={styles.label}>Withdraw from Vault</label>
+          <div style={styles.inputRow}>
             <input
               type="number"
               placeholder="Amount"
               value={withdrawAmount}
               onChange={(e) => setWithdrawAmount(e.target.value)}
-              className="input flex-1"
+              style={styles.input}
               min="0"
               step="0.01"
             />
             <button
               onClick={onWithdraw}
               disabled={loading || !withdrawAmount}
-              className="btn-secondary flex items-center gap-2 whitespace-nowrap"
+              style={{...styles.btnSecondary, opacity: (loading || !withdrawAmount) ? 0.5 : 1}}
             >
-              {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <ArrowUpFromLine className="w-4 h-4" />
-              )}
+              {loading ? <Loader2 size={16} style={{animation: 'spin 1s linear infinite'}} /> : <ArrowUpFromLine size={16} />}
               Withdraw
             </button>
           </div>
         </div>
       </div>
 
-      {/* Faucet */}
-      <div className="mt-6 pt-6 border-t border-border">
+      <div style={styles.faucetSection}>
         <button
           onClick={onFaucet}
           disabled={loading}
-          className="w-full btn-secondary flex items-center justify-center gap-2"
+          style={{...styles.faucetBtn, opacity: loading ? 0.5 : 1}}
         >
-          {loading ? (
-            <Loader2 className="w-4 h-4 animate-spin" />
-          ) : (
-            <Droplets className="w-4 h-4" />
-          )}
+          {loading ? <Loader2 size={16} style={{animation: 'spin 1s linear infinite'}} /> : <Droplets size={16} />}
           Get {faucetAmount} mUSDT (Testnet Faucet)
         </button>
       </div>

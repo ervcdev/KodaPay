@@ -3,11 +3,6 @@
  * 
  * A decentralized autonomous subscription protocol built for Polkadot.
  * Clean, minimalist UI with Polkadot-inspired dark theme.
- * 
- * ARCHITECTURE:
- * - Modular components for maintainability
- * - Talisman/MetaMask wallet integration
- * - Ethers.js v6 for contract interactions
  */
 
 import { useState, useEffect } from 'react'
@@ -39,6 +34,100 @@ const USDT_ABI = [
   "function allowance(address owner, address spender) external view returns (uint256)",
   "function faucet(address to, uint256 amount) external"
 ]
+
+const styles = {
+  page: {
+    minHeight: '100vh',
+    backgroundColor: 'var(--bg-primary)',
+  },
+  main: {
+    maxWidth: '1280px',
+    margin: '0 auto',
+    padding: '32px 24px',
+  },
+  welcome: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: '60vh',
+    textAlign: 'center',
+    padding: '40px 20px',
+  },
+  welcomeLogo: {
+    width: '80px',
+    height: '80px',
+    borderRadius: '16px',
+    backgroundColor: 'var(--primary-light)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: '24px',
+    fontSize: '40px',
+    fontWeight: 700,
+    color: 'var(--primary)',
+  },
+  welcomeTitle: {
+    fontSize: '40px',
+    fontWeight: 700,
+    color: 'var(--text-primary)',
+    marginBottom: '16px',
+  },
+  welcomeText: {
+    fontSize: '18px',
+    color: 'var(--text-secondary)',
+    maxWidth: '480px',
+    marginBottom: '32px',
+    lineHeight: 1.7,
+  },
+  welcomeBtn: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '16px 32px',
+    borderRadius: '8px',
+    backgroundColor: 'var(--primary)',
+    color: 'white',
+    fontWeight: 500,
+    fontSize: '16px',
+    border: 'none',
+    cursor: 'pointer',
+  },
+  welcomeHint: {
+    fontSize: '14px',
+    color: 'var(--text-muted)',
+    marginTop: '16px',
+  },
+  grid: {
+    display: 'grid',
+    gap: '24px',
+  },
+  grid2: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '24px',
+  },
+  loader: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: '100vh',
+    backgroundColor: 'var(--bg-primary)',
+  },
+  spinner: {
+    width: '48px',
+    height: '48px',
+    border: '4px solid var(--border)',
+    borderTopColor: 'var(--primary)',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+    marginBottom: '16px',
+  },
+  loaderText: {
+    color: 'var(--text-secondary)',
+  },
+}
 
 export default function Home() {
   // Mounting state
@@ -105,9 +194,7 @@ export default function Home() {
   }, [account, isMounted, walletReady, subScriptContract, usdtContract])
 
   const handleConnectWallet = async () => {
-    if (!isMounted || !walletReady) {
-      return
-    }
+    if (!isMounted || !walletReady) return
 
     setLoading(true)
     
@@ -341,17 +428,15 @@ export default function Home() {
   // Loading state
   if (!isMounted) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-text-secondary">Loading SubScript...</p>
-        </div>
+      <div style={styles.loader}>
+        <div style={styles.spinner}></div>
+        <p style={styles.loaderText}>Loading SubScript...</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div style={styles.page}>
       <Header
         account={account}
         chainId={chainId}
@@ -361,34 +446,30 @@ export default function Home() {
         onDisconnect={handleDisconnectWallet}
       />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main style={styles.main}>
         {!account ? (
           // Welcome State
-          <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-            <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
-              <span className="text-4xl font-bold text-primary">S</span>
-            </div>
-            <h1 className="text-4xl font-bold text-white mb-4">
-              Welcome to SubScript
-            </h1>
-            <p className="text-lg text-text-secondary max-w-md mb-8">
+          <div style={styles.welcome}>
+            <div style={styles.welcomeLogo}>S</div>
+            <h1 style={styles.welcomeTitle}>Welcome to SubScript</h1>
+            <p style={styles.welcomeText}>
               The decentralized autonomous subscription protocol. 
               Manage recurring payments on-chain with complete transparency.
             </p>
             <button
               onClick={handleConnectWallet}
               disabled={!walletReady || loading}
-              className="btn-primary text-lg px-8 py-3"
+              style={{...styles.welcomeBtn, opacity: (!walletReady || loading) ? 0.5 : 1}}
             >
               {loading ? 'Connecting...' : 'Connect Your Wallet'}
             </button>
-            <p className="text-sm text-text-muted mt-4">
+            <p style={styles.welcomeHint}>
               Supports Talisman, SubWallet, MetaMask & more
             </p>
           </div>
         ) : (
           // Dashboard
-          <div className="space-y-6">
+          <div style={styles.grid}>
             {/* Top Row: Vault Card */}
             <VaultCard
               vaultBalance={vaultBalance}
@@ -406,7 +487,7 @@ export default function Home() {
             />
 
             {/* Middle Row: Create Subscription & Activity */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div style={styles.grid2}>
               <SubscriptionForm
                 receiver={newSubReceiver}
                 setReceiver={setNewSubReceiver}

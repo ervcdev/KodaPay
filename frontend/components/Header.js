@@ -5,6 +5,110 @@
 
 import { Wallet, Loader2 } from 'lucide-react'
 
+const styles = {
+  header: {
+    borderBottom: '1px solid var(--border)',
+    backgroundColor: 'var(--bg-card)',
+    position: 'sticky',
+    top: 0,
+    zIndex: 50,
+  },
+  container: {
+    maxWidth: '1280px',
+    margin: '0 auto',
+    padding: '0 24px',
+  },
+  inner: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    height: '64px',
+  },
+  brand: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+  },
+  logo: {
+    width: '36px',
+    height: '36px',
+    borderRadius: '8px',
+    backgroundColor: 'var(--primary)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    color: 'white',
+    fontWeight: 700,
+    fontSize: '18px',
+  },
+  title: {
+    fontSize: '20px',
+    fontWeight: 600,
+    color: 'var(--text-primary)',
+  },
+  right: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '16px',
+  },
+  network: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '6px 12px',
+    borderRadius: '100px',
+    backgroundColor: 'var(--bg-input)',
+    border: '1px solid var(--border)',
+  },
+  dot: {
+    width: '8px',
+    height: '8px',
+    borderRadius: '50%',
+    backgroundColor: 'var(--success)',
+  },
+  networkText: {
+    fontSize: '13px',
+    color: 'var(--text-secondary)',
+  },
+  btnPrimary: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '10px 20px',
+    borderRadius: '8px',
+    backgroundColor: 'var(--primary)',
+    color: 'white',
+    fontWeight: 500,
+    fontSize: '14px',
+    border: 'none',
+    cursor: 'pointer',
+  },
+  btnSecondary: {
+    padding: '8px 16px',
+    borderRadius: '8px',
+    backgroundColor: 'var(--bg-input)',
+    color: 'var(--text-primary)',
+    fontWeight: 500,
+    fontSize: '13px',
+    border: '1px solid var(--border)',
+    cursor: 'pointer',
+  },
+  walletInfo: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+  },
+  address: {
+    fontSize: '14px',
+    fontWeight: 500,
+    color: 'var(--text-primary)',
+    fontFamily: 'monospace',
+  },
+  spinner: {
+    animation: 'spin 1s linear infinite',
+  }
+}
+
 export default function Header({
   account,
   chainId,
@@ -19,57 +123,44 @@ export default function Header({
   }
 
   return (
-    <header className="border-b border-border bg-background-card/50 backdrop-blur-sm sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo & Brand */}
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-white font-bold text-lg">S</span>
-            </div>
-            <span className="text-xl font-semibold text-white">SubScript</span>
+    <header style={styles.header}>
+      <div style={styles.container}>
+        <div style={styles.inner}>
+          <div style={styles.brand}>
+            <div style={styles.logo}>S</div>
+            <span style={styles.title}>SubScript</span>
           </div>
 
-          {/* Network Status & Wallet */}
-          <div className="flex items-center gap-4">
-            {/* Network Indicator */}
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-background-elevated border border-border">
-              <span className="w-2 h-2 rounded-full bg-success status-pulse"></span>
-              <span className="text-sm text-text-secondary">
+          <div style={styles.right}>
+            <div style={styles.network}>
+              <span style={styles.dot}></span>
+              <span style={styles.networkText}>
                 {chainId === 31337 ? 'Local Hardhat' : chainId === 420420421 ? 'Westend Revive' : 'Unknown Network'}
               </span>
             </div>
 
-            {/* Wallet Button */}
             {!account ? (
               <button
                 onClick={onConnect}
                 disabled={!walletReady || loading}
-                className="btn-primary flex items-center gap-2"
+                style={{...styles.btnPrimary, opacity: (!walletReady || loading) ? 0.5 : 1}}
               >
                 {loading ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 size={16} style={styles.spinner} />
                     <span>Connecting...</span>
                   </>
                 ) : (
                   <>
-                    <Wallet className="w-4 h-4" />
+                    <Wallet size={16} />
                     <span>Connect Wallet</span>
                   </>
                 )}
               </button>
             ) : (
-              <div className="flex items-center gap-3">
-                <div className="hidden md:flex flex-col items-end">
-                  <span className="text-sm font-medium text-white font-mono">
-                    {shortenAddress(account)}
-                  </span>
-                </div>
-                <button
-                  onClick={onDisconnect}
-                  className="btn-secondary text-sm"
-                >
+              <div style={styles.walletInfo}>
+                <span style={styles.address}>{shortenAddress(account)}</span>
+                <button onClick={onDisconnect} style={styles.btnSecondary}>
                   Disconnect
                 </button>
               </div>

@@ -1,8 +1,25 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+:root {
+  --primary: #E6007A;
+  --primary-hover: #CC006B;
+  --primary-light: rgba(230, 0, 122, 0.1);
+  --bg-primary: #0a0a0f;
+  --bg-secondary: #12121a;
+  --bg-card: #16161f;
+  --bg-card-hover: #1a1a24;
+  --bg-input: #1e1e28;
+  --border: #2a2a35;
+  --border-hover: #3a3a45;
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0b0;
+  --text-muted: #606070;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --radius: 8px;
+  --radius-lg: 12px;
+}
 
 * {
   box-sizing: border-box;
@@ -10,112 +27,28 @@
   padding: 0;
 }
 
-html,
-body {
+html, body {
   font-family: 'Inter', system-ui, sans-serif;
-  background-color: #0a0a0f;
-  color: #ffffff;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-secondary); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-::-webkit-scrollbar-track {
-  background: #111118;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #2a2a3a;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #3a3a4a;
-}
-
-/* Focus styles */
 *:focus-visible {
-  outline: 2px solid #E6007A;
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
-/* Utility classes */
-@layer components {
-  .btn-primary {
-    @apply bg-primary hover:bg-primary-hover text-white font-medium py-2.5 px-4 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
-  }
-
-  .btn-secondary {
-    @apply bg-background-elevated hover:bg-border text-white font-medium py-2.5 px-4 rounded-lg border border-border transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
-  }
-
-  .btn-danger {
-    @apply bg-transparent hover:bg-danger/10 text-danger font-medium py-2 px-3 rounded-lg border border-danger/30 transition-all duration-200;
-  }
-
-  .card {
-    @apply bg-background-card border border-border rounded-xl p-6;
-  }
-
-  .input {
-    @apply w-full bg-background-elevated border border-border rounded-lg px-4 py-3 text-white placeholder-text-muted focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-200;
-  }
-
-  .label {
-    @apply block text-sm font-medium text-text-secondary mb-2;
-  }
-}
-
-/* Loading spinner animation */
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
-
-/* Gradient glow effect for cards */
-.card-glow {
-  position: relative;
-}
-
-.card-glow::before {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  background: linear-gradient(135deg, #E6007A40, transparent 50%, transparent);
-  border-radius: inherit;
-  z-index: -1;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.card-glow:hover::before {
-  opacity: 1;
-}
-
-/* Status indicator pulse */
-@keyframes pulse-dot {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-.status-pulse {
-  animation: pulse-dot 2s ease-in-out infinite;
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
