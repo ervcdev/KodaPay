@@ -1,28 +1,19 @@
 /**
- * Kodapay Frontend - Wallet Integration
- * 
- * ¿Qué hace este archivo?
- * Página principal de Kodapay optimizada para Talisman wallet y Westend Revive.
- * Reemplaza MetaMask con @polkadot/extension-dapp para mejor integración con Polkadot.
- * 
- * ¿Por qué Talisman en lugar de MetaMask?
- * - Talisman es nativo de Polkadot con soporte EVM integrado
- * - Mejor UX para usuarios del ecosistema Polkadot
- * - Soporte directo para Westend Revive sin configuración manual
- * - Gestión unificada de cuentas Substrate y EVM
- * 
- * ARQUITECTURA DE CONEXIÓN:
- * 1. Detecta extensiones Polkadot disponibles (Talisman, SubWallet, etc.)
- * 2. Conecta usando @polkadot/extension-dapp
- * 3. Obtiene cuentas EVM del usuario
- * 4. Inicializa provider para Westend Revive
- * 5. Configura contratos con ethers.js v6
+ * KodaPay - Futuristic Web3 Subscription Protocol
+ * Terminal from 2077 - Clean, Dark, High-Performance
  */
 
 import { useState, useEffect } from 'react'
 import { ethers } from 'ethers'
-import dynamic from 'next/dynamic'
 import { walletConnector, connectWallet, createContract, getWalletBalance, disconnectWallet, isConnected } from '../lib/wallet-connector'
+import FloatingNav from '../components/FloatingNav'
+import Header from '../components/Header'
+import HeroStats from '../components/HeroStats'
+import CreateSubscription from '../components/CreateSubscription'
+import QuickTools from '../components/QuickTools'
+import PaymentExecutor from '../components/PaymentExecutor'
+import SubscriptionsTable from '../components/SubscriptionsTable'
+import Footer from '../components/Footer'
 import WalletSelector from '../components/WalletSelector'
 
 // Remove unused PAPI import that was causing issues
@@ -47,32 +38,230 @@ const USDT_ABI = [
   "function faucet(address to, uint256 amount) external"
 ]
 
+const styles = {
+  layout: {
+    minHeight: '100vh',
+    display: 'flex',
+    flexDirection: 'column',
+    position: 'relative',
+  },
+  main: {
+    flex: 1,
+    padding: '100px 48px 48px',
+    maxWidth: '1200px',
+    width: '100%',
+    margin: '0 auto',
+  },
+  welcome: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: '80vh',
+    textAlign: 'center',
+    padding: '48px',
+  },
+  welcomeLogo: {
+    width: '80px',
+    height: '80px',
+    background: 'linear-gradient(135deg, #E6007A 0%, #FF1A8C 100%)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: '20px',
+    marginBottom: '40px',
+    boxShadow: '0 0 60px rgba(230, 0, 122, 0.4)',
+    animation: 'glow-pulse 3s ease-in-out infinite',
+  },
+  welcomeLogoText: {
+    color: '#FFFFFF',
+    fontWeight: 700,
+    fontSize: '36px',
+  },
+  welcomeTitle: {
+    fontSize: '52px',
+    fontWeight: 700,
+    color: '#FFFFFF',
+    letterSpacing: '-2px',
+    marginBottom: '20px',
+  },
+  welcomeTitlePink: {
+    background: 'linear-gradient(135deg, #E6007A 0%, #FF1A8C 100%)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
+  },
+  welcomeText: {
+    fontSize: '17px',
+    color: 'rgba(255, 255, 255, 0.5)',
+    maxWidth: '480px',
+    marginBottom: '48px',
+    lineHeight: 1.8,
+  },
+  welcomeBtn: {
+    padding: '18px 48px',
+    background: 'linear-gradient(135deg, #E6007A 0%, #FF1A8C 100%)',
+    color: '#FFFFFF',
+    border: 'none',
+    borderRadius: '12px',
+    fontSize: '16px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    boxShadow: '0 0 50px rgba(230, 0, 122, 0.4)',
+    transition: 'all 0.2s ease',
+  },
+  welcomeHint: {
+    fontSize: '12px',
+    color: 'rgba(255, 255, 255, 0.3)',
+    marginTop: '24px',
+    fontFamily: "'JetBrains Mono', monospace",
+  },
+  grid2: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '24px',
+    marginBottom: '32px',
+  },
+  loader: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: '100vh',
+    background: 'linear-gradient(180deg, #050505 0%, #0A0A0B 100%)',
+  },
+  spinner: {
+    width: '40px',
+    height: '40px',
+    border: '3px solid rgba(255, 255, 255, 0.1)',
+    borderTopColor: '#E6007A',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+    marginBottom: '20px',
+    boxShadow: '0 0 20px rgba(230, 0, 122, 0.3)',
+  },
+  loaderText: {
+    color: 'rgba(255, 255, 255, 0.5)',
+    fontSize: '14px',
+    fontFamily: "'JetBrains Mono', monospace",
+  },
+  depositModal: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    backdropFilter: 'blur(10px)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+  },
+  modalContent: {
+    background: 'rgba(15, 15, 18, 0.95)',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+    borderRadius: '16px',
+    width: '420px',
+    maxWidth: '90%',
+    overflow: 'hidden',
+  },
+  modalHeader: {
+    padding: '24px',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+  },
+  modalTitle: {
+    fontSize: '17px',
+    fontWeight: 600,
+    color: '#FFFFFF',
+  },
+  modalBody: {
+    padding: '24px',
+  },
+  modalLabel: {
+    display: 'block',
+    fontSize: '10px',
+    fontWeight: 600,
+    color: 'rgba(255, 255, 255, 0.4)',
+    textTransform: 'uppercase',
+    letterSpacing: '1px',
+    marginBottom: '10px',
+  },
+  modalInput: {
+    width: '100%',
+    padding: '14px 16px',
+    background: 'rgba(0, 0, 0, 0.3)',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+    borderRadius: '10px',
+    fontSize: '16px',
+    fontFamily: "'JetBrains Mono', monospace",
+    color: '#FFFFFF',
+  },
+  modalActions: {
+    display: 'flex',
+    gap: '12px',
+    marginTop: '24px',
+  },
+  modalBtn: {
+    flex: 1,
+    padding: '14px 24px',
+    border: 'none',
+    borderRadius: '10px',
+    fontSize: '14px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+  },
+  modalBtnPrimary: {
+    background: 'linear-gradient(135deg, #E6007A 0%, #FF1A8C 100%)',
+    color: '#FFFFFF',
+    boxShadow: '0 0 25px rgba(230, 0, 122, 0.3)',
+  },
+  modalBtnSecondary: {
+    background: 'rgba(255, 255, 255, 0.05)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    color: 'rgba(255, 255, 255, 0.6)',
+  },
+}
+
+const WalletIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <path d="M21 12V7H5a2 2 0 010-4h14v4"/>
+    <path d="M3 5v14a2 2 0 002 2h16v-5"/>
+    <path d="M18 12a2 2 0 100 4 2 2 0 000-4z"/>
+  </svg>
+)
+
 export default function Home() {
-  // Hydration and mounting state
+  // Mounting state
   const [isMounted, setIsMounted] = useState(false)
   const [walletReady, setWalletReady] = useState(false)
+  const [activeTab, setActiveTab] = useState('dashboard')
   
-  // Wallet states (modernized)
+  // Wallet states
   const [account, setAccount] = useState('')
   const [chainId, setChainId] = useState(null)
   const [balance, setBalance] = useState('0')
-  const [kodapayContract, setKodapayContract] = useState(null)
+  const [kodaPayContract, setkodaPayContract] = useState(null)
   const [usdtContract, setUsdtContract] = useState(null)
   const [loading, setLoading] = useState(false)
   const [showWalletSelector, setShowWalletSelector] = useState(false)
   
-  // State for UI
+  // UI state
   const [usdtBalance, setUsdtBalance] = useState('0')
   const [vaultBalance, setVaultBalance] = useState('0')
   const [subscriptions, setSubscriptions] = useState([])
+  const [showDepositModal, setShowDepositModal] = useState(false)
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false)
+  const [modalAmount, setModalAmount] = useState('')
   
   // Form states
-  const [depositAmount, setDepositAmount] = useState('')
-  const [withdrawAmount, setWithdrawAmount] = useState('')
   const [newSubReceiver, setNewSubReceiver] = useState('')
   const [newSubAmount, setNewSubAmount] = useState('')
   const [newSubFrequency, setNewSubFrequency] = useState('')
-  const [executeSubId, setExecuteSubId] = useState('')
 
   // Contract addresses (read from environment variables)
   const KODAPAY_ADDRESS = process.env.NEXT_PUBLIC_KODAPAY_ADDRESS
@@ -83,7 +272,7 @@ export default function Home() {
   const CURRENCY_SYMBOL = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || 'WND'
   
   // Testing configuration - easy to change for final video
-  const FAUCET_AMOUNT = '10'    // Change to '1000' for final video
+  const FAUCET_AMOUNT = '100'    // Change to '1000' for final video
   const DEMO_MODE = true        // Set to false for production amounts
   
   console.log('🔧 Environment variables loaded:')
@@ -93,27 +282,23 @@ export default function Home() {
   console.log('  NEXT_PUBLIC_CHAIN_ID:', process.env.NEXT_PUBLIC_CHAIN_ID)
   console.log('🧪 Testing mode:', DEMO_MODE ? `${FAUCET_AMOUNT} mUSDT` : 'Production amounts')
 
-  // Initialize client-side only functionality
+  // Initialize client-side
   useEffect(() => {
     setIsMounted(true)
     
-    // Initialize wallet connector
     const initWallet = async () => {
       try {
-        // Check if already connected
         if (isConnected()) {
           const info = walletConnector.getConnectionInfo()
           setAccount(info.account)
           setChainId(info.chainId)
           setWalletReady(true)
-          
-          // Load balance and contracts
           await loadWalletData()
         }
         setWalletReady(true)
       } catch (error) {
         console.error('Failed to initialize wallet:', error)
-        setWalletReady(true) // Still set ready to show connect button
+        setWalletReady(true)
       }
     }
     
@@ -125,22 +310,10 @@ export default function Home() {
       loadBalances()
       loadSubscriptions()
     }
-  }, [account, isMounted, walletReady])
+  }, [account, isMounted, walletReady, kodaPayContract, usdtContract])
 
-  const connectWalletModern = async () => {
-    if (!isMounted || !walletReady) {
-      console.warn('⚠️ Wallet system not ready:', { isMounted, walletReady })
-      alert('Wallet system is still loading. Please try again in a moment.')
-      return
-    }
-
-    console.log('🚀 Connect button clicked - starting wallet connection...')
-    console.log('🔍 Environment check:', {
-      windowExists: typeof window !== 'undefined',
-      ethereumExists: typeof window !== 'undefined' && !!window.ethereum,
-      walletReady,
-      isMounted
-    })
+  const handleConnectWallet = async () => {
+    if (!isMounted || !walletReady) return
 
     setLoading(true)
     
@@ -160,30 +333,12 @@ export default function Home() {
       if (result.success) {
         setAccount(result.account)
         setChainId(result.chainId)
-        
-        // Load wallet data
         await loadWalletData()
-        
-        console.log('🎉 Wallet connected:', {
-          account: result.account,
-          chainId: result.chainId,
-          network: 'Polkadot Hub TestNet',
-          provider: walletConnector.providerInfo?.name || 'Unknown'
-        })
-      } else {
-        console.error('❌ Connection failed - result.success is false')
       }
-      
     } catch (error) {
-      console.error('❌ Wallet connection failed:', error)
-      
-      // Provide helpful error messages
+      console.error('Wallet connection failed:', error)
       if (error.message.includes('No Ethereum wallet detected')) {
-        setShowWalletSelector(true) // Show selector to install wallets
-      } else if (error.message.includes('User rejected')) {
-        alert('Connection cancelled. Please try again and approve the connection.')
-      } else {
-        alert(`Connection failed: ${error.message}`)
+        setShowWalletSelector(true)
       }
     } finally {
       setLoading(false)
@@ -191,26 +346,14 @@ export default function Home() {
   }
 
   const handleWalletSelect = async (selectedWallet) => {
-    console.log('🎯 Wallet selected:', selectedWallet.name)
     setShowWalletSelector(false)
-    
-    // Store selected wallet info for connection
     walletConnector.selectedProvider = selectedWallet.provider
     walletConnector.providerInfo = selectedWallet
-    
-    await connectWithBestProvider()
-  }
-
-  const handleWalletSelectorCancel = () => {
-    console.log('❌ Wallet selection cancelled')
-    setShowWalletSelector(false)
+    await handleConnectWallet()
   }
 
   const loadWalletData = async () => {
     try {
-      console.log('💰 Loading wallet data...')
-      
-      // Get wallet balance
       const walletBalance = await getWalletBalance()
       setBalance(walletBalance)
       console.log('💰 Wallet balance loaded:', walletBalance)
@@ -231,22 +374,15 @@ export default function Home() {
       }
       
       if (USDT_ADDRESS) {
-        console.log('🏗️ Creating USDT contract with address:', USDT_ADDRESS)
         const usdt = createContract(USDT_ADDRESS, USDT_ABI)
         setUsdtContract(usdt)
-        console.log('✅ USDT contract created')
-      } else {
-        console.warn('⚠️ USDT contract address not configured')
       }
-      
     } catch (error) {
-      console.error('❌ Failed to load wallet data:', error)
-      console.error('Error details:', error.message)
-      console.error('Error stack:', error.stack)
+      console.error('Failed to load wallet data:', error)
     }
   }
 
-  const disconnectWalletModern = () => {
+  const handleDisconnectWallet = () => {
     disconnectWallet()
     setAccount('')
     setChainId(null)
@@ -256,7 +392,6 @@ export default function Home() {
     setUsdtBalance('0')
     setVaultBalance('0')
     setSubscriptions([])
-    console.log('🔌 Wallet disconnected')
   }
 
   const loadBalances = async () => {
@@ -274,7 +409,7 @@ export default function Home() {
   }
 
   const loadSubscriptions = async () => {
-    if (!kodapayContract || !account) return
+    if (!kodaPayContract || !account) return
     
     try {
       const subIds = await kodapayContract.getUserSubscriptions(account)
@@ -302,6 +437,7 @@ export default function Home() {
     }
   }
 
+  // Handler functions
   const handleDeposit = async () => {
     console.log('💳 Deposit button clicked!')
     console.log('🔍 Deposit validation:', {
@@ -356,24 +492,10 @@ export default function Home() {
       // Step 4: Update UI
       setDepositAmount('')
       await loadBalances()
-      alert(`Deposit successful! ${depositAmount} mUSDT added to your vault.`)
-      console.log('🎉 Deposit completed successfully!')
-      
+      setShowDepositModal(false)
+      setModalAmount('')
     } catch (error) {
-      console.error('❌ Deposit error:', error)
-      console.error('Error name:', error.name)
-      console.error('Error message:', error.message)
-      console.error('Error code:', error.code)
-      console.error('Error stack:', error.stack)
-      
-      // Provide specific error messages
-      if (error.message.includes('insufficient allowance')) {
-        alert('Deposit failed: Insufficient token allowance. Please try again.')
-      } else if (error.message.includes('insufficient balance')) {
-        alert('Deposit failed: Insufficient mUSDT balance. Use faucet first.')
-      } else {
-        alert('Deposit failed: ' + error.message)
-      }
+      console.error('Deposit error:', error)
     }
     setLoading(false)
   }
@@ -387,15 +509,20 @@ export default function Home() {
       const tx = await kodapayContract.withdraw(amount)
       await tx.wait()
       
-      setWithdrawAmount('')
       await loadBalances()
-      alert('Withdrawal successful!')
+      setShowWithdrawModal(false)
+      setModalAmount('')
     } catch (error) {
       console.error('Withdrawal error:', error)
-      alert('Withdrawal failed: ' + error.message)
     }
     setLoading(false)
   }
+
+  const handleCancelSubscription = async (id) => {
+  console.log("Cancelling subscription ID:", id);
+  // Temporary placeholder for PVM Contract integration
+  alert("Subscription cancellation is currently under development for the PVM-native contract.");
+};
 
   const handleCreateSubscription = async () => {
     if (!kodapayContract || !newSubReceiver || !newSubAmount || !newSubFrequency) return
@@ -403,7 +530,7 @@ export default function Home() {
     setLoading(true)
     try {
       const amount = ethers.parseUnits(newSubAmount, 6)
-      const frequency = parseInt(newSubFrequency) * 86400 // Convert days to seconds
+      const frequency = parseInt(newSubFrequency) * 86400
       
       const tx = await kodapayContract.createSubscription(newSubReceiver, amount, frequency)
       await tx.wait()
@@ -412,278 +539,306 @@ export default function Home() {
       setNewSubAmount('')
       setNewSubFrequency('')
       await loadSubscriptions()
-      alert('Subscription created!')
     } catch (error) {
       console.error('Create subscription error:', error)
-      alert('Failed to create subscription: ' + error.message)
     }
     setLoading(false)
   }
 
-  const handleExecutePayment = async () => {
-    if (!kodapayContract || !executeSubId) return
+
+  const handleExecutePayment = async (subId) => {
+    if (!kodaPayContract) return
     
     setLoading(true)
     try {
-      const tx = await kodapayContract.executePayment(executeSubId)
+      const tx = await kodaPayContract.executePayment(subId)
       await tx.wait()
-      
-      setExecuteSubId('')
       await loadSubscriptions()
       await loadBalances()
-      alert('Payment executed! You earned the execution fee.')
     } catch (error) {
       console.error('Execute payment error:', error)
-      alert('Failed to execute payment: ' + error.message)
     }
     setLoading(false)
+  }
+
+  const handleRunAllDue = async () => {
+    const dueSubs = subscriptions.filter(s => s.active && s.isDue)
+    for (const sub of dueSubs) {
+      await handleExecutePayment(sub.id)
+    }
   }
 
   const handleFaucet = async () => {
-    console.log('🚰 Faucet button clicked!')
-    console.log('🔍 Contract check:', {
-      usdtContract: !!usdtContract,
-      account: account,
-      loading: loading
-    })
-    
-    if (!usdtContract) {
-      console.error('❌ USDT contract not available')
-      alert('USDT contract not configured. Please check environment variables.')
-      return
-    }
-    
-    if (!account) {
-      console.error('❌ No account connected')
-      alert('Please connect your wallet first.')
-      return
-    }
+    if (!usdtContract || !account) return
     
     setLoading(true)
     try {
-      console.log(`💰 Requesting ${FAUCET_AMOUNT} mUSDT from faucet...`)
       const amount = ethers.parseUnits(FAUCET_AMOUNT, 6)
-      console.log('📊 Amount parsed:', amount.toString())
-      
-      console.log('📝 Calling faucet function...')
       const tx = await usdtContract.faucet(account, amount)
-      console.log('✅ Transaction sent:', tx.hash)
-      
-      console.log('⏳ Waiting for confirmation...')
-      const receipt = await tx.wait()
-      console.log('✅ Transaction confirmed:', receipt.hash)
-      
+      await tx.wait()
       await loadBalances()
-      alert(`Faucet successful! You received ${FAUCET_AMOUNT} mUSDT`)
-      console.log('🎉 Faucet completed successfully!')
     } catch (error) {
-      console.error('❌ Faucet error:', error)
-      console.error('Error name:', error.name)
-      console.error('Error message:', error.message)
-      console.error('Error code:', error.code)
-      console.error('Error stack:', error.stack)
-      alert('Faucet failed: ' + error.message)
+      console.error('Faucet error:', error)
     }
     setLoading(false)
   }
 
-  // Prevent hydration mismatch by not rendering until mounted
+  const handleAddToken = async () => {
+    if (!USDT_ADDRESS || !window.ethereum) return
+    
+    try {
+      await window.ethereum.request({
+        method: 'wallet_watchAsset',
+        params: {
+          type: 'ERC20',
+          options: {
+            address: USDT_ADDRESS,
+            symbol: 'mUSDT',
+            decimals: 6,
+          },
+        },
+      })
+    } catch (error) {
+      console.error('Add token error:', error)
+    }
+  }
+
+  // Computed values
+  const dueSubscriptions = subscriptions.filter(s => s.active && s.isDue)
+  const totalPending = dueSubscriptions.reduce((acc, s) => acc + parseFloat(s.amount), 0).toFixed(2)
+  const activeSubscriptions = subscriptions.filter(s => s.active).length
+
+  // Loading state
   if (!isMounted) {
     return (
-      <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-        <h1>🚀 Kodapay: Subscriptions on Polkadot</h1>
-        <p>⏳ Loading Polkadot extensions...</p>
+      <div style={styles.loader}>
+        <div style={styles.spinner}></div>
+        <p style={styles.loaderText}>Initializing KodaPay...</p>
       </div>
     )
   }
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <h1>🚀 Kodapay: Subscriptions on Polkadot</h1>
+    <div style={styles.layout}>
+      <FloatingNav activeTab={activeTab} onTabChange={setActiveTab} />
       
-      {!account ? (
-        <div>
-          <button 
-            onClick={connectWalletModern} 
-            style={buttonStyle}
-            disabled={!walletReady || loading}
-          >
-            {loading ? '⏳ Connecting...' : walletReady ? '🔗 Connect Wallet' : '⏳ Loading...'}
-          </button>
-          <p style={{ marginTop: '10px', fontSize: '14px', color: '#666' }}>
-            Supports: Talisman, SubWallet, MetaMask & more
-          </p>
-        </div>
-      ) : (
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-            <div>
-              <p><strong>Connected:</strong> {account}</p>
-              <p><strong>Network:</strong> {NETWORK_NAME} (Chain ID: {chainId})</p>
-              <p><strong>Wallet Balance:</strong> {balance} {CURRENCY_SYMBOL}</p>
-              <p><strong>USDT Balance:</strong> {usdtBalance} mUSDT</p>
-              <p><strong>Vault Balance:</strong> {vaultBalance} mUSDT</p>
+      <Header
+        account={account}
+        chainId={chainId}
+        loading={loading}
+        walletReady={walletReady}
+        wndBalance={balance}
+        usdtBalance={usdtBalance}
+        onConnect={handleConnectWallet}
+        onDisconnect={handleDisconnectWallet}
+      />
+
+      <main style={styles.main}>
+        {!account ? (
+          <div style={styles.welcome}>
+            <div style={styles.welcomeLogo}>
+              <span style={styles.welcomeLogoText}>K</span>
             </div>
-            <button 
-              onClick={disconnectWalletModern}
-              style={{...buttonStyle, backgroundColor: '#dc3545'}}
+            <h1 style={styles.welcomeTitle}>
+              Koda<span style={styles.welcomeTitlePink}>Pay</span>
+            </h1>
+            <p style={styles.welcomeText}>
+              The decentralized subscription protocol engineered for Polkadot. 
+              Automate recurring payments on-chain with military-grade security.
+            </p>
+            <button
+              onClick={handleConnectWallet}
+              disabled={!walletReady || loading}
+              style={{
+                ...styles.welcomeBtn,
+                opacity: (!walletReady || loading) ? 0.4 : 1,
+                cursor: (!walletReady || loading) ? 'not-allowed' : 'pointer',
+              }}
+              onMouseOver={(e) => {
+                if (walletReady && !loading) e.target.style.boxShadow = '0 0 70px rgba(230, 0, 122, 0.6)'
+              }}
+              onMouseOut={(e) => {
+                if (walletReady && !loading) e.target.style.boxShadow = '0 0 50px rgba(230, 0, 122, 0.4)'
+              }}
             >
-              🔌 Disconnect
+              <WalletIcon />
+              {loading ? 'Connecting...' : 'Connect Wallet'}
             </button>
+            <p style={styles.welcomeHint}>
+              // Supports Talisman, SubWallet, MetaMask
+            </p>
           </div>
-          
-          <hr />
-          
-          {/* Faucet */}
-          <div style={sectionStyle}>
-            <h3>💰 Get Test Tokens</h3>
-            <button onClick={handleFaucet} disabled={loading} style={buttonStyle}>
-              Get {FAUCET_AMOUNT} mUSDT (Faucet)
-            </button>
-          </div>
-          
-          {/* Deposit */}
-          <div style={sectionStyle}>
-            <h3>📥 Deposit to Vault</h3>
-            <input
-              type="number"
-              placeholder={DEMO_MODE ? "Try 5 or 10 mUSDT" : "Amount"}
-              value={depositAmount}
-              onChange={(e) => setDepositAmount(e.target.value)}
-              style={inputStyle}
+        ) : (
+          <>
+            {/* Hero Stats */}
+            <HeroStats
+              vaultBalance={vaultBalance}
+              totalSubscriptions={subscriptions.length}
+              activeSubscriptions={activeSubscriptions}
+              onDeposit={() => setShowDepositModal(true)}
+              onWithdraw={() => setShowWithdrawModal(true)}
             />
-            <button onClick={handleDeposit} disabled={loading} style={buttonStyle}>
-              Deposit {depositAmount ? `${depositAmount} mUSDT` : 'to Vault'}
-            </button>
-            {DEMO_MODE && (
-              <div style={{fontSize: '12px', color: '#666', marginTop: '5px'}}>
-                💡 Testing mode: Use small amounts like 5-10 mUSDT
+
+            {/* Main Actions Grid */}
+            <div style={styles.grid2}>
+              <CreateSubscription
+                receiver={newSubReceiver}
+                setReceiver={setNewSubReceiver}
+                amount={newSubAmount}
+                setAmount={setNewSubAmount}
+                frequency={newSubFrequency}
+                setFrequency={setNewSubFrequency}
+                onCreateSubscription={handleCreateSubscription}
+                loading={loading}
+              />
+              <QuickTools
+                onMintFaucet={handleFaucet}
+                onAddToken={handleAddToken}
+                loading={loading}
+                usdtAddress={USDT_ADDRESS}
+              />
+            </div>
+
+            {/* Payment Executor */}
+            <PaymentExecutor
+              dueSubscriptions={dueSubscriptions.length}
+              totalPending={totalPending}
+              onRunSubscriptions={handleRunAllDue}
+              loading={loading}
+            />
+
+            {/* Subscriptions Table */}
+            <SubscriptionsTable
+              subscriptions={subscriptions}
+              onCancel={handleCancelSubscription}
+              onExecute={handleExecutePayment}
+              loading={loading}
+            />
+          </>
+        )}
+      </main>
+
+      <Footer />
+
+      {/* Deposit Modal */}
+      {showDepositModal && (
+        <div style={styles.depositModal} onClick={() => setShowDepositModal(false)}>
+          <div style={styles.modalContent} onClick={e => e.stopPropagation()}>
+            <div style={styles.modalHeader}>
+              <h3 style={styles.modalTitle}>Deposit mUSDT</h3>
+            </div>
+            <div style={styles.modalBody}>
+              <label style={styles.modalLabel}>Amount</label>
+              <input
+                type="number"
+                style={styles.modalInput}
+                placeholder="0.00"
+                value={modalAmount}
+                onChange={(e) => setModalAmount(e.target.value)}
+                onFocus={(e) => {
+                  e.target.style.borderColor = 'rgba(230, 0, 122, 0.5)';
+                  e.target.style.boxShadow = '0 0 20px rgba(230, 0, 122, 0.15)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+                  e.target.style.boxShadow = 'none';
+                }}
+              />
+              <div style={styles.modalActions}>
+                <button
+                  style={{...styles.modalBtn, ...styles.modalBtnSecondary}}
+                  onClick={() => { setShowDepositModal(false); setModalAmount(''); }}
+                  onMouseOver={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.08)'}
+                  onMouseOut={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.05)'}
+                >
+                  Cancel
+                </button>
+                <button
+                  style={{
+                    ...styles.modalBtn, 
+                    ...styles.modalBtnPrimary,
+                    opacity: (loading || !modalAmount) ? 0.4 : 1,
+                  }}
+                  onClick={handleDeposit}
+                  disabled={loading || !modalAmount}
+                  onMouseOver={(e) => {
+                    if (!loading && modalAmount) e.target.style.boxShadow = '0 0 40px rgba(230, 0, 122, 0.5)';
+                  }}
+                  onMouseOut={(e) => {
+                    if (!loading && modalAmount) e.target.style.boxShadow = '0 0 25px rgba(230, 0, 122, 0.3)';
+                  }}
+                >
+                  {loading ? 'Depositing...' : 'Deposit'}
+                </button>
               </div>
-            )}
-          </div>
-          
-          {/* Withdraw */}
-          <div style={sectionStyle}>
-            <h3>📤 Withdraw from Vault</h3>
-            <input
-              type="number"
-              placeholder="Amount"
-              value={withdrawAmount}
-              onChange={(e) => setWithdrawAmount(e.target.value)}
-              style={inputStyle}
-            />
-            <button onClick={handleWithdraw} disabled={loading} style={buttonStyle}>
-              Withdraw
-            </button>
-          </div>
-          
-          {/* Create Subscription */}
-          <div style={sectionStyle}>
-            <h3>➕ Create New Subscription</h3>
-            <input
-              type="text"
-              placeholder="Receiver Address"
-              value={newSubReceiver}
-              onChange={(e) => setNewSubReceiver(e.target.value)}
-              style={inputStyle}
-            />
-            <input
-              type="number"
-              placeholder="Amount (USDT)"
-              value={newSubAmount}
-              onChange={(e) => setNewSubAmount(e.target.value)}
-              style={inputStyle}
-            />
-            <input
-              type="number"
-              placeholder="Frequency (days)"
-              value={newSubFrequency}
-              onChange={(e) => setNewSubFrequency(e.target.value)}
-              style={inputStyle}
-            />
-            <button onClick={handleCreateSubscription} disabled={loading} style={buttonStyle}>
-              Create Subscription
-            </button>
-          </div>
-          
-          {/* Execute Payment */}
-          <div style={sectionStyle}>
-            <h3>⚡ Execute Payment (Earn 1% Fee)</h3>
-            <input
-              type="number"
-              placeholder="Subscription ID"
-              value={executeSubId}
-              onChange={(e) => setExecuteSubId(e.target.value)}
-              style={inputStyle}
-            />
-            <button onClick={handleExecutePayment} disabled={loading} style={buttonStyle}>
-              Execute Payment
-            </button>
-          </div>
-          
-          {/* Subscriptions List */}
-          <div style={sectionStyle}>
-            <h3>📋 Your Subscriptions</h3>
-            {subscriptions.length === 0 ? (
-              <p>No subscriptions found</p>
-            ) : (
-              subscriptions.map((sub) => (
-                <div key={sub.id} style={subStyle}>
-                  <p><strong>ID:</strong> {sub.id}</p>
-                  <p><strong>Receiver:</strong> {sub.receiver}</p>
-                  <p><strong>Amount:</strong> {sub.amount} mUSDT</p>
-                  <p><strong>Frequency:</strong> {Math.floor(sub.frequency / 86400)} days</p>
-                  <p><strong>Status:</strong> {sub.active ? 'Active' : 'Inactive'}</p>
-                  <p><strong>Payment Due:</strong> {sub.isDue ? '✅ Yes' : '❌ No'}</p>
-                </div>
-              ))
-            )}
+            </div>
           </div>
         </div>
       )}
-      
-      {loading && <p>⏳ Processing transaction...</p>}
-      
+
+      {/* Withdraw Modal */}
+      {showWithdrawModal && (
+        <div style={styles.depositModal} onClick={() => setShowWithdrawModal(false)}>
+          <div style={styles.modalContent} onClick={e => e.stopPropagation()}>
+            <div style={styles.modalHeader}>
+              <h3 style={styles.modalTitle}>Withdraw mUSDT</h3>
+            </div>
+            <div style={styles.modalBody}>
+              <label style={styles.modalLabel}>Amount</label>
+              <input
+                type="number"
+                style={styles.modalInput}
+                placeholder="0.00"
+                value={modalAmount}
+                onChange={(e) => setModalAmount(e.target.value)}
+                onFocus={(e) => {
+                  e.target.style.borderColor = 'rgba(230, 0, 122, 0.5)';
+                  e.target.style.boxShadow = '0 0 20px rgba(230, 0, 122, 0.15)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = 'rgba(255, 255, 255, 0.08)';
+                  e.target.style.boxShadow = 'none';
+                }}
+              />
+              <div style={styles.modalActions}>
+                <button
+                  style={{...styles.modalBtn, ...styles.modalBtnSecondary}}
+                  onClick={() => { setShowWithdrawModal(false); setModalAmount(''); }}
+                  onMouseOver={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.08)'}
+                  onMouseOut={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.05)'}
+                >
+                  Cancel
+                </button>
+                <button
+                  style={{
+                    ...styles.modalBtn, 
+                    ...styles.modalBtnPrimary,
+                    opacity: (loading || !modalAmount) ? 0.4 : 1,
+                  }}
+                  onClick={handleWithdraw}
+                  disabled={loading || !modalAmount}
+                  onMouseOver={(e) => {
+                    if (!loading && modalAmount) e.target.style.boxShadow = '0 0 40px rgba(230, 0, 122, 0.5)';
+                  }}
+                  onMouseOut={(e) => {
+                    if (!loading && modalAmount) e.target.style.boxShadow = '0 0 25px rgba(230, 0, 122, 0.3)';
+                  }}
+                >
+                  {loading ? 'Withdrawing...' : 'Withdraw'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Wallet Selector Modal */}
       {showWalletSelector && (
         <WalletSelector
-          onWalletSelect={handleWalletSelect}
-          onCancel={handleWalletSelectorCancel}
+          onSelect={handleWalletSelect}
+          onClose={() => setShowWalletSelector(false)}
         />
       )}
     </div>
   )
-}
-
-const buttonStyle = {
-  padding: '10px 20px',
-  margin: '5px',
-  backgroundColor: '#007bff',
-  color: 'white',
-  border: 'none',
-  borderRadius: '5px',
-  cursor: 'pointer'
-}
-
-const inputStyle = {
-  padding: '8px',
-  margin: '5px',
-  border: '1px solid #ccc',
-  borderRadius: '4px',
-  width: '200px'
-}
-
-const sectionStyle = {
-  margin: '20px 0',
-  padding: '15px',
-  border: '1px solid #ddd',
-  borderRadius: '8px'
-}
-
-const subStyle = {
-  padding: '10px',
-  margin: '10px 0',
-  backgroundColor: '#f8f9fa',
-  border: '1px solid #dee2e6',
-  borderRadius: '5px'
 }
