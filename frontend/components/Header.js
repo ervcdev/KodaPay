@@ -1,173 +1,181 @@
 /**
- * Header Component
- * Displays project branding, network status, and wallet connection
+ * Header Component - KodaPay
+ * Ultra-minimalist navbar with wallet connection
  */
-
-import { Wallet, Loader2 } from 'lucide-react'
 
 const styles = {
   header: {
-    borderBottom: '1px solid var(--border)',
-    backgroundColor: 'var(--bg-card)',
-    position: 'sticky',
-    top: 0,
-    zIndex: 50,
-  },
-  container: {
-    maxWidth: '1280px',
-    margin: '0 auto',
-    padding: '0 24px',
-  },
-  inner: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    height: '64px',
-  },
-  brand: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
+    padding: '16px 48px',
+    borderBottom: '1px solid #E5E5E5',
+    backgroundColor: '#FFFFFF',
+    position: 'sticky',
+    top: 0,
+    zIndex: 100,
   },
   logo: {
-    width: '36px',
-    height: '36px',
-    borderRadius: '8px',
-    backgroundColor: 'var(--primary)',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center',
-    color: 'white',
-    fontWeight: 700,
-    fontSize: '18px',
+    gap: '8px',
   },
-  title: {
+  logoText: {
     fontSize: '20px',
-    fontWeight: 600,
-    color: 'var(--text-primary)',
+    fontWeight: 700,
+    color: '#121212',
+    letterSpacing: '-0.5px',
   },
-  right: {
+  logoPink: {
+    color: '#E6007A',
+  },
+  nav: {
     display: 'flex',
     alignItems: 'center',
-    gap: '16px',
-  },
-  network: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '6px 12px',
-    borderRadius: '100px',
-    backgroundColor: 'var(--bg-input)',
-    border: '1px solid var(--border)',
-  },
-  dot: {
-    width: '8px',
-    height: '8px',
-    borderRadius: '50%',
-    backgroundColor: 'var(--success)',
-  },
-  networkText: {
-    fontSize: '13px',
-    color: 'var(--text-secondary)',
-  },
-  btnPrimary: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '10px 20px',
-    borderRadius: '8px',
-    backgroundColor: 'var(--primary)',
-    color: 'white',
-    fontWeight: 500,
-    fontSize: '14px',
-    border: 'none',
-    cursor: 'pointer',
-  },
-  btnSecondary: {
-    padding: '8px 16px',
-    borderRadius: '8px',
-    backgroundColor: 'var(--bg-input)',
-    color: 'var(--text-primary)',
-    fontWeight: 500,
-    fontSize: '13px',
-    border: '1px solid var(--border)',
-    cursor: 'pointer',
+    gap: '24px',
   },
   walletInfo: {
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
+    gap: '16px',
+  },
+  balanceGroup: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '16px',
+    padding: '10px 20px',
+    border: '1px solid #E5E5E5',
+    backgroundColor: '#FAFAFA',
+  },
+  balanceItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  balanceLabel: {
+    fontSize: '11px',
+    color: '#737373',
+    fontWeight: 600,
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+  },
+  balanceValue: {
+    fontSize: '14px',
+    fontWeight: 600,
+    color: '#121212',
+    fontFamily: "'JetBrains Mono', monospace",
+  },
+  divider: {
+    width: '1px',
+    height: '20px',
+    backgroundColor: '#E5E5E5',
   },
   address: {
+    fontSize: '13px',
+    fontFamily: "'JetBrains Mono', monospace",
+    color: '#525252',
+    padding: '10px 16px',
+    border: '1px solid #E5E5E5',
+    backgroundColor: '#FAFAFA',
+  },
+  connectBtn: {
+    padding: '12px 24px',
+    backgroundColor: '#121212',
+    color: '#FFFFFF',
+    border: 'none',
     fontSize: '14px',
     fontWeight: 500,
-    color: 'var(--text-primary)',
-    fontFamily: 'monospace',
+    cursor: 'pointer',
   },
-  spinner: {
-    animation: 'spin 1s linear infinite',
-  }
-}
+  disconnectBtn: {
+    padding: '10px 16px',
+    backgroundColor: 'transparent',
+    color: '#737373',
+    border: '1px solid #E5E5E5',
+    fontSize: '13px',
+    fontWeight: 500,
+    cursor: 'pointer',
+  },
+};
 
 export default function Header({
   account,
   chainId,
   loading,
   walletReady,
+  wndBalance,
+  usdtBalance,
   onConnect,
   onDisconnect
 }) {
-  const shortenAddress = (address) => {
-    if (!address) return ''
-    return `${address.slice(0, 6)}...${address.slice(-4)}`
-  }
+  const formatAddress = (addr) => {
+    if (!addr) return '';
+    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  };
+
+  const formatBalance = (balance) => {
+    if (!balance) return '0.00';
+    return parseFloat(balance).toFixed(2);
+  };
+
+  const getNetworkName = () => {
+    if (chainId === 31337) return 'Local';
+    if (chainId === 420420421) return 'Westend';
+    return 'Unknown';
+  };
 
   return (
     <header style={styles.header}>
-      <div style={styles.container}>
-        <div style={styles.inner}>
-          <div style={styles.brand}>
-            <div style={styles.logo}>S</div>
-            <span style={styles.title}>SubScript</span>
-          </div>
-
-          <div style={styles.right}>
-            <div style={styles.network}>
-              <span style={styles.dot}></span>
-              <span style={styles.networkText}>
-                {chainId === 31337 ? 'Local Hardhat' : chainId === 420420421 ? 'Westend Revive' : 'Unknown Network'}
-              </span>
-            </div>
-
-            {!account ? (
-              <button
-                onClick={onConnect}
-                disabled={!walletReady || loading}
-                style={{...styles.btnPrimary, opacity: (!walletReady || loading) ? 0.5 : 1}}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 size={16} style={styles.spinner} />
-                    <span>Connecting...</span>
-                  </>
-                ) : (
-                  <>
-                    <Wallet size={16} />
-                    <span>Connect Wallet</span>
-                  </>
-                )}
-              </button>
-            ) : (
-              <div style={styles.walletInfo}>
-                <span style={styles.address}>{shortenAddress(account)}</span>
-                <button onClick={onDisconnect} style={styles.btnSecondary}>
-                  Disconnect
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
+      <div style={styles.logo}>
+        <span style={styles.logoText}>
+          Koda<span style={styles.logoPink}>Pay</span>
+        </span>
       </div>
+
+      <nav style={styles.nav}>
+        {account ? (
+          <div style={styles.walletInfo}>
+            <div style={styles.balanceGroup}>
+              <div style={styles.balanceItem}>
+                <span style={styles.balanceLabel}>WND</span>
+                <span style={styles.balanceValue}>{formatBalance(wndBalance)}</span>
+              </div>
+              <div style={styles.divider} />
+              <div style={styles.balanceItem}>
+                <span style={styles.balanceLabel}>mUSDT</span>
+                <span style={styles.balanceValue}>{formatBalance(usdtBalance)}</span>
+              </div>
+            </div>
+            <span style={styles.address}>{formatAddress(account)}</span>
+            <button 
+              style={styles.disconnectBtn}
+              onClick={onDisconnect}
+              onMouseOver={(e) => e.target.style.borderColor = '#D4D4D4'}
+              onMouseOut={(e) => e.target.style.borderColor = '#E5E5E5'}
+            >
+              Disconnect
+            </button>
+          </div>
+        ) : (
+          <button 
+            style={{
+              ...styles.connectBtn,
+              opacity: (!walletReady || loading) ? 0.6 : 1,
+              cursor: (!walletReady || loading) ? 'not-allowed' : 'pointer',
+            }}
+            onClick={onConnect}
+            disabled={!walletReady || loading}
+            onMouseOver={(e) => {
+              if (walletReady && !loading) e.target.style.backgroundColor = '#2a2a2a';
+            }}
+            onMouseOut={(e) => {
+              if (walletReady && !loading) e.target.style.backgroundColor = '#121212';
+            }}
+          >
+            {loading ? 'Connecting...' : 'Connect Wallet'}
+          </button>
+        )}
+      </nav>
     </header>
-  )
+  );
 }

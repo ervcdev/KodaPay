@@ -1,22 +1,23 @@
 /**
- * SubScript Frontend - Professional Web3 Dashboard
- * 
- * A decentralized autonomous subscription protocol built for Polkadot.
- * Clean, minimalist UI with Polkadot-inspired dark theme.
+ * KodaPay - Web3 Subscription Protocol on Polkadot
+ * Ultra-minimalist SaaS Premium UI
  */
 
 import { useState, useEffect } from 'react'
 import { ethers } from 'ethers'
 import { walletConnector, connectWallet, createContract, getWalletBalance, disconnectWallet, isConnected } from '../lib/wallet-connector'
 import Header from '../components/Header'
-import VaultCard from '../components/VaultCard'
-import SubscriptionForm from '../components/SubscriptionForm'
+import HeroStats from '../components/HeroStats'
+import FaucetBox from '../components/FaucetBox'
+import ManageFunds from '../components/ManageFunds'
+import CreateSubscription from '../components/CreateSubscription'
+import PaymentExecutor from '../components/PaymentExecutor'
 import SubscriptionsTable from '../components/SubscriptionsTable'
-import ActivityLog from '../components/ActivityLog'
+import Footer from '../components/Footer'
 import WalletSelector from '../components/WalletSelector'
 
 // Contract ABIs
-const SubScript_ABI = [
+const KodaPay_ABI = [
   "function deposit(uint256 amount) external",
   "function withdraw(uint256 amount) external", 
   "function createSubscription(address receiver, uint256 amount, uint256 frequency) external returns (uint256)",
@@ -38,74 +39,64 @@ const USDT_ABI = [
 const styles = {
   page: {
     minHeight: '100vh',
-    backgroundColor: 'var(--bg-primary)',
+    backgroundColor: '#FFFFFF',
+    display: 'flex',
+    flexDirection: 'column',
   },
   main: {
-    maxWidth: '1280px',
+    flex: 1,
+    maxWidth: '1200px',
+    width: '100%',
     margin: '0 auto',
-    padding: '32px 24px',
+    padding: '32px 48px',
   },
   welcome: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: '60vh',
+    minHeight: '70vh',
     textAlign: 'center',
-    padding: '40px 20px',
-  },
-  welcomeLogo: {
-    width: '80px',
-    height: '80px',
-    borderRadius: '16px',
-    backgroundColor: 'var(--primary-light)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: '24px',
-    fontSize: '40px',
-    fontWeight: 700,
-    color: 'var(--primary)',
   },
   welcomeTitle: {
-    fontSize: '40px',
+    fontSize: '48px',
     fontWeight: 700,
-    color: 'var(--text-primary)',
+    color: '#121212',
+    letterSpacing: '-1px',
     marginBottom: '16px',
+  },
+  welcomeTitlePink: {
+    color: '#E6007A',
   },
   welcomeText: {
     fontSize: '18px',
-    color: 'var(--text-secondary)',
-    maxWidth: '480px',
-    marginBottom: '32px',
+    color: '#525252',
+    maxWidth: '500px',
+    marginBottom: '40px',
     lineHeight: 1.7,
   },
   welcomeBtn: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '16px 32px',
-    borderRadius: '8px',
-    backgroundColor: 'var(--primary)',
-    color: 'white',
-    fontWeight: 500,
-    fontSize: '16px',
+    padding: '16px 40px',
+    backgroundColor: '#121212',
+    color: '#FFFFFF',
     border: 'none',
+    fontSize: '16px',
+    fontWeight: 500,
     cursor: 'pointer',
   },
   welcomeHint: {
-    fontSize: '14px',
-    color: 'var(--text-muted)',
-    marginTop: '16px',
-  },
-  grid: {
-    display: 'grid',
-    gap: '24px',
+    fontSize: '13px',
+    color: '#A3A3A3',
+    marginTop: '20px',
   },
   grid2: {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
     gap: '24px',
+    marginBottom: '24px',
+  },
+  section: {
+    marginBottom: '24px',
   },
   loader: {
     display: 'flex',
@@ -113,19 +104,20 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: '100vh',
-    backgroundColor: 'var(--bg-primary)',
+    backgroundColor: '#FFFFFF',
   },
   spinner: {
-    width: '48px',
-    height: '48px',
-    border: '4px solid var(--border)',
-    borderTopColor: 'var(--primary)',
+    width: '32px',
+    height: '32px',
+    border: '3px solid #E5E5E5',
+    borderTopColor: '#E6007A',
     borderRadius: '50%',
     animation: 'spin 1s linear infinite',
     marginBottom: '16px',
   },
   loaderText: {
-    color: 'var(--text-secondary)',
+    color: '#737373',
+    fontSize: '14px',
   },
 }
 
@@ -138,7 +130,7 @@ export default function Home() {
   const [account, setAccount] = useState('')
   const [chainId, setChainId] = useState(null)
   const [balance, setBalance] = useState('0')
-  const [subScriptContract, setSubScriptContract] = useState(null)
+  const [kodaPayContract, setKodaPayContract] = useState(null)
   const [usdtContract, setUsdtContract] = useState(null)
   const [loading, setLoading] = useState(false)
   const [showWalletSelector, setShowWalletSelector] = useState(false)
@@ -147,21 +139,18 @@ export default function Home() {
   const [usdtBalance, setUsdtBalance] = useState('0')
   const [vaultBalance, setVaultBalance] = useState('0')
   const [subscriptions, setSubscriptions] = useState([])
-  const [activities, setActivities] = useState([])
   
   // Form states
-  const [depositAmount, setDepositAmount] = useState('')
-  const [withdrawAmount, setWithdrawAmount] = useState('')
   const [newSubReceiver, setNewSubReceiver] = useState('')
   const [newSubAmount, setNewSubAmount] = useState('')
   const [newSubFrequency, setNewSubFrequency] = useState('')
 
   // Contract addresses
-  const SUBSCRIPT_ADDRESS = process.env.NEXT_PUBLIC_KodaPay_ADDRESS || process.env.NEXT_PUBLIC_SUBSCRIPT_ADDRESS
+  const KODAPAY_ADDRESS = process.env.NEXT_PUBLIC_KodaPay_ADDRESS || process.env.NEXT_PUBLIC_SUBSCRIPT_ADDRESS
   const USDT_ADDRESS = process.env.NEXT_PUBLIC_USDT_ADDRESS
   
   // Testing configuration
-  const FAUCET_AMOUNT = '10'
+  const FAUCET_AMOUNT = '100'
 
   // Initialize client-side
   useEffect(() => {
@@ -191,7 +180,7 @@ export default function Home() {
       loadBalances()
       loadSubscriptions()
     }
-  }, [account, isMounted, walletReady, subScriptContract, usdtContract])
+  }, [account, isMounted, walletReady, kodaPayContract, usdtContract])
 
   const handleConnectWallet = async () => {
     if (!isMounted || !walletReady) return
@@ -228,9 +217,9 @@ export default function Home() {
       const walletBalance = await getWalletBalance()
       setBalance(walletBalance)
       
-      if (SUBSCRIPT_ADDRESS) {
-        const subScript = createContract(SUBSCRIPT_ADDRESS, SubScript_ABI)
-        setSubScriptContract(subScript)
+      if (KODAPAY_ADDRESS) {
+        const kodaPay = createContract(KODAPAY_ADDRESS, KodaPay_ABI)
+        setKodaPayContract(kodaPay)
       }
       
       if (USDT_ADDRESS) {
@@ -247,7 +236,7 @@ export default function Home() {
     setAccount('')
     setChainId(null)
     setBalance('0')
-    setSubScriptContract(null)
+    setKodaPayContract(null)
     setUsdtContract(null)
     setUsdtBalance('0')
     setVaultBalance('0')
@@ -255,11 +244,11 @@ export default function Home() {
   }
 
   const loadBalances = async () => {
-    if (!usdtContract || !subScriptContract || !account) return
+    if (!usdtContract || !kodaPayContract || !account) return
     
     try {
       const usdtBal = await usdtContract.balanceOf(account)
-      const vaultBal = await subScriptContract.userBalances(account)
+      const vaultBal = await kodaPayContract.userBalances(account)
       
       setUsdtBalance(ethers.formatUnits(usdtBal, 6))
       setVaultBalance(ethers.formatUnits(vaultBal, 6))
@@ -269,15 +258,15 @@ export default function Home() {
   }
 
   const loadSubscriptions = async () => {
-    if (!subScriptContract || !account) return
+    if (!kodaPayContract || !account) return
     
     try {
-      const subIds = await subScriptContract.getUserSubscriptions(account)
+      const subIds = await kodaPayContract.getUserSubscriptions(account)
       const subs = []
       
       for (let id of subIds) {
-        const sub = await subScriptContract.getSubscription(id)
-        const isDue = await subScriptContract.isPaymentDue(id)
+        const sub = await kodaPayContract.getSubscription(id)
+        const isDue = await kodaPayContract.isPaymentDue(id)
         
         subs.push({
           id: id.toString(),
@@ -297,47 +286,41 @@ export default function Home() {
     }
   }
 
-  // Handler functions for contract interactions
-  const handleDeposit = async () => {
-    if (!subScriptContract || !usdtContract || !depositAmount) return
+  // Handler functions
+  const handleDeposit = async (amount) => {
+    if (!kodaPayContract || !usdtContract || !amount) return
     
     setLoading(true)
     try {
-      const amount = ethers.parseUnits(depositAmount, 6)
+      const parsedAmount = ethers.parseUnits(amount, 6)
       
-      const currentAllowance = await usdtContract.allowance(account, SUBSCRIPT_ADDRESS)
+      const currentAllowance = await usdtContract.allowance(account, KODAPAY_ADDRESS)
       
-      if (currentAllowance < amount) {
-        const approveTx = await usdtContract.approve(SUBSCRIPT_ADDRESS, amount)
+      if (currentAllowance < parsedAmount) {
+        const approveTx = await usdtContract.approve(KODAPAY_ADDRESS, parsedAmount)
         await approveTx.wait()
       }
       
-      const depositTx = await subScriptContract.deposit(amount)
+      const depositTx = await kodaPayContract.deposit(parsedAmount)
       await depositTx.wait()
       
-      setDepositAmount('')
       await loadBalances()
-      
-      addActivity('deposit', depositAmount)
     } catch (error) {
       console.error('Deposit error:', error)
     }
     setLoading(false)
   }
 
-  const handleWithdraw = async () => {
-    if (!subScriptContract || !withdrawAmount) return
+  const handleWithdraw = async (amount) => {
+    if (!kodaPayContract || !amount) return
     
     setLoading(true)
     try {
-      const amount = ethers.parseUnits(withdrawAmount, 6)
-      const tx = await subScriptContract.withdraw(amount)
+      const parsedAmount = ethers.parseUnits(amount, 6)
+      const tx = await kodaPayContract.withdraw(parsedAmount)
       await tx.wait()
       
-      setWithdrawAmount('')
       await loadBalances()
-      
-      addActivity('withdraw', withdrawAmount)
     } catch (error) {
       console.error('Withdrawal error:', error)
     }
@@ -345,14 +328,14 @@ export default function Home() {
   }
 
   const handleCreateSubscription = async () => {
-    if (!subScriptContract || !newSubReceiver || !newSubAmount || !newSubFrequency) return
+    if (!kodaPayContract || !newSubReceiver || !newSubAmount || !newSubFrequency) return
     
     setLoading(true)
     try {
       const amount = ethers.parseUnits(newSubAmount, 6)
       const frequency = parseInt(newSubFrequency) * 86400
       
-      const tx = await subScriptContract.createSubscription(newSubReceiver, amount, frequency)
+      const tx = await kodaPayContract.createSubscription(newSubReceiver, amount, frequency)
       await tx.wait()
       
       setNewSubReceiver('')
@@ -366,15 +349,13 @@ export default function Home() {
   }
 
   const handleCancelSubscription = async (subId) => {
-    if (!subScriptContract) return
+    if (!kodaPayContract) return
     
     setLoading(true)
     try {
-      const tx = await subScriptContract.cancelSubscription(subId)
+      const tx = await kodaPayContract.cancelSubscription(subId)
       await tx.wait()
       await loadSubscriptions()
-      
-      addActivity('cancel', null, subId)
     } catch (error) {
       console.error('Cancel subscription error:', error)
     }
@@ -382,11 +363,11 @@ export default function Home() {
   }
 
   const handleExecutePayment = async (subId) => {
-    if (!subScriptContract) return
+    if (!kodaPayContract) return
     
     setLoading(true)
     try {
-      const tx = await subScriptContract.executePayment(subId)
+      const tx = await kodaPayContract.executePayment(subId)
       await tx.wait()
       await loadSubscriptions()
       await loadBalances()
@@ -394,6 +375,13 @@ export default function Home() {
       console.error('Execute payment error:', error)
     }
     setLoading(false)
+  }
+
+  const handleRunAllDue = async () => {
+    const dueSubs = subscriptions.filter(s => s.active && s.isDue)
+    for (const sub of dueSubs) {
+      await handleExecutePayment(sub.id)
+    }
   }
 
   const handleFaucet = async () => {
@@ -405,32 +393,23 @@ export default function Home() {
       const tx = await usdtContract.faucet(account, amount)
       await tx.wait()
       await loadBalances()
-      
-      addActivity('deposit', FAUCET_AMOUNT)
     } catch (error) {
       console.error('Faucet error:', error)
     }
     setLoading(false)
   }
 
-  const addActivity = (type, amount, subscriptionId = null) => {
-    const newActivity = {
-      id: Date.now(),
-      type,
-      amount,
-      subscriptionId,
-      timestamp: Date.now(),
-      status: 'success'
-    }
-    setActivities(prev => [newActivity, ...prev].slice(0, 10))
-  }
+  // Computed values
+  const dueSubscriptions = subscriptions.filter(s => s.active && s.isDue)
+  const totalPending = dueSubscriptions.reduce((acc, s) => acc + parseFloat(s.amount), 0).toFixed(2)
+  const activeSubscriptions = subscriptions.filter(s => s.active).length
 
   // Loading state
   if (!isMounted) {
     return (
       <div style={styles.loader}>
         <div style={styles.spinner}></div>
-        <p style={styles.loaderText}>Loading SubScript...</p>
+        <p style={styles.loaderText}>Loading KodaPay...</p>
       </div>
     )
   }
@@ -442,53 +421,67 @@ export default function Home() {
         chainId={chainId}
         loading={loading}
         walletReady={walletReady}
+        wndBalance={balance}
+        usdtBalance={usdtBalance}
         onConnect={handleConnectWallet}
         onDisconnect={handleDisconnectWallet}
       />
 
       <main style={styles.main}>
         {!account ? (
-          // Welcome State
           <div style={styles.welcome}>
-            <div style={styles.welcomeLogo}>S</div>
-            <h1 style={styles.welcomeTitle}>Welcome to SubScript</h1>
+            <h1 style={styles.welcomeTitle}>
+              Koda<span style={styles.welcomeTitlePink}>Pay</span>
+            </h1>
             <p style={styles.welcomeText}>
-              The decentralized autonomous subscription protocol. 
+              The decentralized subscription protocol built on Polkadot. 
               Manage recurring payments on-chain with complete transparency.
             </p>
             <button
               onClick={handleConnectWallet}
               disabled={!walletReady || loading}
-              style={{...styles.welcomeBtn, opacity: (!walletReady || loading) ? 0.5 : 1}}
+              style={{
+                ...styles.welcomeBtn,
+                opacity: (!walletReady || loading) ? 0.6 : 1,
+                cursor: (!walletReady || loading) ? 'not-allowed' : 'pointer',
+              }}
+              onMouseOver={(e) => {
+                if (walletReady && !loading) e.target.style.backgroundColor = '#2a2a2a'
+              }}
+              onMouseOut={(e) => {
+                if (walletReady && !loading) e.target.style.backgroundColor = '#121212'
+              }}
             >
-              {loading ? 'Connecting...' : 'Connect Your Wallet'}
+              {loading ? 'Connecting...' : 'Connect Wallet'}
             </button>
             <p style={styles.welcomeHint}>
-              Supports Talisman, SubWallet, MetaMask & more
+              Supports Talisman, SubWallet, MetaMask
             </p>
           </div>
         ) : (
-          // Dashboard
-          <div style={styles.grid}>
-            {/* Top Row: Vault Card */}
-            <VaultCard
-              vaultBalance={vaultBalance}
-              usdtBalance={usdtBalance}
-              walletBalance={balance}
-              depositAmount={depositAmount}
-              setDepositAmount={setDepositAmount}
-              withdrawAmount={withdrawAmount}
-              setWithdrawAmount={setWithdrawAmount}
-              onDeposit={handleDeposit}
-              onWithdraw={handleWithdraw}
-              onFaucet={handleFaucet}
-              loading={loading}
-              faucetAmount={FAUCET_AMOUNT}
-            />
+          <>
+            {/* Hero Stats */}
+            <div style={styles.section}>
+              <HeroStats
+                vaultBalance={vaultBalance}
+                totalSubscriptions={subscriptions.length}
+                activeSubscriptions={activeSubscriptions}
+              />
+            </div>
 
-            {/* Middle Row: Create Subscription & Activity */}
+            {/* Faucet */}
+            <div style={styles.section}>
+              <FaucetBox onMint={handleFaucet} isLoading={loading} />
+            </div>
+
+            {/* Main Actions Grid */}
             <div style={styles.grid2}>
-              <SubscriptionForm
+              <ManageFunds
+                onDeposit={handleDeposit}
+                onWithdraw={handleWithdraw}
+                isLoading={loading}
+              />
+              <CreateSubscription
                 receiver={newSubReceiver}
                 setReceiver={setNewSubReceiver}
                 amount={newSubAmount}
@@ -498,19 +491,32 @@ export default function Home() {
                 onCreateSubscription={handleCreateSubscription}
                 loading={loading}
               />
-              <ActivityLog activities={activities} />
             </div>
 
-            {/* Bottom Row: Subscriptions Table */}
-            <SubscriptionsTable
-              subscriptions={subscriptions}
-              onCancel={handleCancelSubscription}
-              onExecute={handleExecutePayment}
-              loading={loading}
-            />
-          </div>
+            {/* Payment Executor */}
+            <div style={styles.section}>
+              <PaymentExecutor
+                dueSubscriptions={dueSubscriptions.length}
+                totalPending={totalPending}
+                onRunSubscriptions={handleRunAllDue}
+                loading={loading}
+              />
+            </div>
+
+            {/* Subscriptions Table */}
+            <div style={styles.section}>
+              <SubscriptionsTable
+                subscriptions={subscriptions}
+                onCancel={handleCancelSubscription}
+                onExecute={handleExecutePayment}
+                loading={loading}
+              />
+            </div>
+          </>
         )}
       </main>
+
+      <Footer />
 
       {/* Wallet Selector Modal */}
       {showWalletSelector && (

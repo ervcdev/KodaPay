@@ -1,293 +1,236 @@
 /**
- * SubscriptionsTable Component
- * Displays active subscriptions with management actions
+ * SubscriptionsTable Component - KodaPay
+ * Clean, professional table for subscription management
  */
 
-import { Repeat, Trash2, Clock, AlertCircle } from 'lucide-react'
-
 const styles = {
-  card: {
-    backgroundColor: 'var(--bg-card)',
-    border: '1px solid var(--border)',
-    borderRadius: '12px',
-    padding: '24px',
+  container: {
+    border: '1px solid #E5E5E5',
+    backgroundColor: '#FFFFFF',
   },
   header: {
+    padding: '20px 24px',
+    borderBottom: '1px solid #E5E5E5',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: '24px',
-  },
-  headerLeft: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-  },
-  iconBox: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '8px',
-    backgroundColor: 'var(--primary-light)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: 'var(--primary)',
   },
   title: {
-    fontSize: '18px',
+    fontSize: '14px',
     fontWeight: 600,
-    color: 'var(--text-primary)',
+    color: '#121212',
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
   },
-  subtitle: {
+  count: {
     fontSize: '13px',
-    color: 'var(--text-muted)',
-    marginTop: '2px',
-  },
-  empty: {
-    textAlign: 'center',
-    padding: '48px 24px',
-  },
-  emptyIcon: {
-    width: '64px',
-    height: '64px',
-    borderRadius: '50%',
-    backgroundColor: 'var(--bg-input)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    margin: '0 auto 16px',
-    color: 'var(--text-muted)',
-  },
-  emptyText: {
-    color: 'var(--text-secondary)',
-    marginBottom: '4px',
-  },
-  emptyHint: {
-    fontSize: '13px',
-    color: 'var(--text-muted)',
+    color: '#737373',
   },
   table: {
     width: '100%',
     borderCollapse: 'collapse',
   },
   th: {
+    padding: '14px 24px',
     textAlign: 'left',
-    padding: '12px 16px',
-    fontSize: '12px',
-    fontWeight: 500,
+    fontSize: '11px',
+    fontWeight: 600,
+    color: '#737373',
     textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-    color: 'var(--text-muted)',
-    borderBottom: '1px solid var(--border)',
-  },
-  thRight: {
-    textAlign: 'right',
-    padding: '12px 16px',
-    fontSize: '12px',
-    fontWeight: 500,
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-    color: 'var(--text-muted)',
-    borderBottom: '1px solid var(--border)',
+    letterSpacing: '0.5px',
+    borderBottom: '1px solid #E5E5E5',
+    backgroundColor: '#FAFAFA',
   },
   td: {
-    padding: '16px',
+    padding: '16px 24px',
     fontSize: '14px',
-    color: 'var(--text-secondary)',
-    borderBottom: '1px solid var(--border)',
+    color: '#121212',
+    borderBottom: '1px solid #F5F5F5',
   },
-  tdRight: {
-    padding: '16px',
-    textAlign: 'right',
-    borderBottom: '1px solid var(--border)',
-  },
-  mono: {
-    fontFamily: 'monospace',
-    fontSize: '13px',
-    color: 'var(--text-primary)',
-  },
-  amount: {
-    color: 'var(--text-primary)',
-    fontWeight: 500,
-  },
-  amountUnit: {
-    color: 'var(--text-muted)',
-    fontSize: '13px',
-    marginLeft: '4px',
-  },
-  clockRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    color: 'var(--text-secondary)',
+  tdMono: {
+    fontFamily: "'JetBrains Mono', monospace",
     fontSize: '13px',
   },
-  badgeActive: {
+  statusActive: {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '6px',
     padding: '4px 10px',
-    borderRadius: '100px',
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-    color: 'var(--success)',
+    backgroundColor: '#ECFDF5',
+    border: '1px solid #D1FAE5',
     fontSize: '12px',
     fontWeight: 500,
+    color: '#16A34A',
   },
-  badgeDue: {
+  statusInactive: {
     display: 'inline-flex',
     alignItems: 'center',
     gap: '6px',
     padding: '4px 10px',
-    borderRadius: '100px',
-    backgroundColor: 'rgba(245, 158, 11, 0.1)',
-    color: 'var(--warning)',
+    backgroundColor: '#FEF2F2',
+    border: '1px solid #FECACA',
     fontSize: '12px',
     fontWeight: 500,
+    color: '#DC2626',
   },
-  dot: {
+  statusDue: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '6px',
+    padding: '4px 10px',
+    backgroundColor: '#FFF7ED',
+    border: '1px solid #FED7AA',
+    fontSize: '12px',
+    fontWeight: 500,
+    color: '#EA580C',
+  },
+  statusDot: {
     width: '6px',
     height: '6px',
     borderRadius: '50%',
   },
   actions: {
     display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
     gap: '8px',
+    justifyContent: 'flex-end',
   },
-  executeBtn: {
-    fontSize: '13px',
-    color: 'var(--primary)',
-    background: 'none',
+  btnExecute: {
+    padding: '6px 12px',
+    backgroundColor: '#E6007A',
+    color: '#FFFFFF',
     border: 'none',
-    cursor: 'pointer',
+    fontSize: '12px',
     fontWeight: 500,
-  },
-  cancelBtn: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-    padding: '6px 10px',
-    borderRadius: '6px',
-    backgroundColor: 'transparent',
-    color: 'var(--danger)',
-    fontSize: '13px',
-    border: '1px solid var(--danger)',
     cursor: 'pointer',
   },
-}
+  btnCancel: {
+    padding: '6px 12px',
+    backgroundColor: '#FFFFFF',
+    color: '#DC2626',
+    border: '1px solid #FECACA',
+    fontSize: '12px',
+    fontWeight: 500,
+    cursor: 'pointer',
+  },
+  btnDisabled: {
+    opacity: 0.5,
+    cursor: 'not-allowed',
+  },
+  emptyState: {
+    padding: '48px 24px',
+    textAlign: 'center',
+  },
+  emptyTitle: {
+    fontSize: '16px',
+    fontWeight: 600,
+    color: '#121212',
+    marginBottom: '8px',
+  },
+  emptyText: {
+    fontSize: '14px',
+    color: '#737373',
+  },
+};
 
-export default function SubscriptionsTable({
-  subscriptions,
-  onCancel,
-  onExecute,
-  loading
-}) {
-  const shortenAddress = (address) => {
-    if (!address) return ''
-    return `${address.slice(0, 6)}...${address.slice(-4)}`
-  }
+export default function SubscriptionsTable({ subscriptions = [], onCancel, onExecute, loading }) {
+  const formatAddress = (addr) => {
+    if (!addr) return '';
+    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  };
 
-  const calculateNextPayment = (lastPayment, frequency) => {
-    if (!lastPayment || lastPayment === '0') return 'Pending'
-    const nextDate = new Date((parseInt(lastPayment) + parseInt(frequency)) * 1000)
-    return nextDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-  }
+  const formatNextPayment = (lastPayment, frequency) => {
+    const next = (parseInt(lastPayment) + parseInt(frequency)) * 1000;
+    const date = new Date(next);
+    if (date.getTime() <= Date.now()) return 'Due Now';
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
 
-  const activeSubscriptions = subscriptions.filter(sub => sub.active)
+  const activeCount = subscriptions.filter(s => s.active).length;
 
   return (
-    <div style={styles.card}>
+    <div style={styles.container}>
       <div style={styles.header}>
-        <div style={styles.headerLeft}>
-          <div style={styles.iconBox}>
-            <Repeat size={20} />
-          </div>
-          <div>
-            <h2 style={styles.title}>Active Subscriptions</h2>
-            <p style={styles.subtitle}>
-              {activeSubscriptions.length} active subscription{activeSubscriptions.length !== 1 ? 's' : ''}
-            </p>
-          </div>
-        </div>
+        <h3 style={styles.title}>Subscriptions</h3>
+        <span style={styles.count}>{activeCount} Active / {subscriptions.length} Total</span>
       </div>
 
-      {activeSubscriptions.length === 0 ? (
-        <div style={styles.empty}>
-          <div style={styles.emptyIcon}>
-            <AlertCircle size={32} />
-          </div>
-          <p style={styles.emptyText}>No active subscriptions</p>
-          <p style={styles.emptyHint}>Create your first subscription above</p>
+      {subscriptions.length === 0 ? (
+        <div style={styles.emptyState}>
+          <h4 style={styles.emptyTitle}>No Subscriptions Yet</h4>
+          <p style={styles.emptyText}>Create your first subscription to get started with automated payments.</p>
         </div>
       ) : (
-        <div style={{overflowX: 'auto'}}>
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                <th style={styles.th}>Recipient</th>
-                <th style={styles.th}>Amount</th>
-                <th style={styles.th}>Next Payment</th>
-                <th style={styles.th}>Status</th>
-                <th style={styles.thRight}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {activeSubscriptions.map((sub) => (
-                <tr key={sub.id}>
-                  <td style={styles.td}>
-                    <span style={styles.mono}>{shortenAddress(sub.receiver)}</span>
-                  </td>
-                  <td style={styles.td}>
-                    <span style={styles.amount}>{sub.amount}</span>
-                    <span style={styles.amountUnit}>USDT</span>
-                  </td>
-                  <td style={styles.td}>
-                    <div style={styles.clockRow}>
-                      <Clock size={14} style={{color: 'var(--text-muted)'}} />
-                      <span>{calculateNextPayment(sub.lastPayment, sub.frequency)}</span>
-                    </div>
-                  </td>
-                  <td style={styles.td}>
-                    {sub.isDue ? (
-                      <span style={styles.badgeDue}>
-                        <span style={{...styles.dot, backgroundColor: 'var(--warning)'}}></span>
-                        Payment Due
-                      </span>
-                    ) : (
-                      <span style={styles.badgeActive}>
-                        <span style={{...styles.dot, backgroundColor: 'var(--success)'}}></span>
-                        Active
-                      </span>
-                    )}
-                  </td>
-                  <td style={styles.tdRight}>
-                    <div style={styles.actions}>
-                      {sub.isDue && (
-                        <button
-                          onClick={() => onExecute(sub.id)}
-                          disabled={loading}
-                          style={styles.executeBtn}
-                        >
-                          Execute
-                        </button>
-                      )}
+        <table style={styles.table}>
+          <thead>
+            <tr>
+              <th style={styles.th}>ID</th>
+              <th style={styles.th}>Receiver</th>
+              <th style={styles.th}>Amount</th>
+              <th style={styles.th}>Cycle</th>
+              <th style={styles.th}>Next Payment</th>
+              <th style={styles.th}>Status</th>
+              <th style={{...styles.th, textAlign: 'right'}}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {subscriptions.map((sub) => (
+              <tr key={sub.id}>
+                <td style={{...styles.td, ...styles.tdMono}}>#{sub.id}</td>
+                <td style={{...styles.td, ...styles.tdMono}}>{formatAddress(sub.receiver)}</td>
+                <td style={{...styles.td, ...styles.tdMono}}>{sub.amount} mUSDT</td>
+                <td style={styles.td}>{Math.round(parseInt(sub.frequency) / 86400)} days</td>
+                <td style={styles.td}>{formatNextPayment(sub.lastPayment, sub.frequency)}</td>
+                <td style={styles.td}>
+                  {!sub.active ? (
+                    <span style={styles.statusInactive}>
+                      <span style={{...styles.statusDot, backgroundColor: '#DC2626'}}></span>
+                      Inactive
+                    </span>
+                  ) : sub.isDue ? (
+                    <span style={styles.statusDue}>
+                      <span style={{...styles.statusDot, backgroundColor: '#EA580C'}}></span>
+                      Due
+                    </span>
+                  ) : (
+                    <span style={styles.statusActive}>
+                      <span style={{...styles.statusDot, backgroundColor: '#16A34A'}}></span>
+                      Active
+                    </span>
+                  )}
+                </td>
+                <td style={{...styles.td, textAlign: 'right'}}>
+                  <div style={styles.actions}>
+                    {sub.active && sub.isDue && (
                       <button
+                        style={{
+                          ...styles.btnExecute,
+                          ...(loading ? styles.btnDisabled : {}),
+                        }}
+                        onClick={() => onExecute(sub.id)}
+                        disabled={loading}
+                      >
+                        Execute
+                      </button>
+                    )}
+                    {sub.active && (
+                      <button
+                        style={{
+                          ...styles.btnCancel,
+                          ...(loading ? styles.btnDisabled : {}),
+                        }}
                         onClick={() => onCancel(sub.id)}
                         disabled={loading}
-                        style={styles.cancelBtn}
                       >
-                        <Trash2 size={14} />
                         Cancel
                       </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       )}
     </div>
-  )
+  );
 }
